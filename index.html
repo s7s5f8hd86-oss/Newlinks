@@ -4,52 +4,139 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
 <title>DropIt • by Sanjeet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body {
-    background:#0d1117; min-height:100vh; display:flex; align-items:center; justify-content:center;
-    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:1rem;
+  :root{
+    --bg:#0a0e14; --card:#12161f; --card2:#171c27; --border:#232936;
+    --text:#eef1f6; --muted:#8892a4; --accent1:#ff8a3d; --accent2:#ff4d8d;
+    --blue:#3b82f6; --green:#22c55e; --red:#ef4444;
   }
-  .card { background:#161b22; border-radius:1.5rem; border:1px solid #30363d; width:100%; max-width:500px; padding:1.8rem 1.4rem; }
-  .header { text-align:center; margin-bottom:0.4rem; }
-  .header h1 { font-size:2rem; color:#e6edf3; font-weight:700; }
-  .header .byline { font-size:0.75rem; color:#8b949e; margin-top:0.2rem; }
-  .sync-status { text-align:center; font-size:0.72rem; color:#8b949e; margin-bottom:0.8rem; min-height:1rem; }
-  .sync-status.ok { color:#3fb950; }
-  .sync-status.err { color:#f85149; }
-  .quote-box { background:#1c2129; border-left:3px solid #f0883e; border-radius:0.8rem; padding:1rem 1.1rem; margin-bottom:1rem; }
-  .quote-text { font-size:0.9rem; color:#c9d1d9; font-style:italic; line-height:1.5; }
-  .quote-author { font-size:0.75rem; color:#8b949e; margin-top:0.4rem; text-align:right; }
-  input { width:100%; background:#0d1117; border:1px solid #30363d; border-radius:0.8rem; padding:0.85rem 1rem; color:#e6edf3; font-size:0.95rem; outline:none; margin-bottom:0.6rem; }
-  input:focus { border-color:#f0883e; }
-  .input-row { display:flex; gap:0.5rem; margin-bottom:0.6rem; }
-  .input-row input { flex:1; margin-bottom:0; }
-  button { background:#f0883e; color:#0d1117; border:none; border-radius:0.8rem; padding:0.85rem 1rem; font-weight:700; font-size:0.9rem; cursor:pointer; white-space:nowrap; }
-  button:active { transform:scale(0.96); }
-  button:disabled { opacity:0.5; cursor:not-allowed; }
-  button.red { background:#da3633; color:#fff; }
-  button.blue { background:#1f6feb; color:#fff; }
-  button.gray { background:#30363d; color:#c9d1d9; }
-  .links-title { color:#8b949e; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:1rem 0 0.5rem; display:flex; justify-content:space-between; align-items:center; }
-  .refresh-btn { background:none; border:none; color:#8b949e; font-size:0.9rem; cursor:pointer; }
-  .link-item { background:#1c2129; border:1px solid #30363d; border-radius:0.7rem; padding:0.7rem 0.9rem; margin-bottom:0.5rem; display:flex; align-items:center; justify-content:space-between; gap:0.4rem; }
-  .link-url { color:#58a6ff; font-size:0.85rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-decoration:none; }
-  .visit-btn { background:#1f6feb; color:#fff; border:none; border-radius:0.5rem; padding:0.4rem 0.8rem; font-size:0.8rem; font-weight:600; cursor:pointer; white-space:nowrap; }
-  .del-btn { background:none; border:none; color:#f85149; font-size:1.1rem; cursor:pointer; padding:0.2rem 0.4rem; font-weight:bold; }
-  .empty { color:#484f58; text-align:center; font-size:0.85rem; padding:1.5rem; }
-  .footer { text-align:center; margin-top:1.5rem; font-size:0.7rem; color:#484f58; }
-  .footer span { color:#f0883e; }
-  .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); background:#238636; color:#fff; padding:0.7rem 1.5rem; border-radius:2rem; font-size:0.85rem; font-weight:600; z-index:999; transition:opacity 0.3s; }
-  .toast.err { background:#da3633; }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:
+      radial-gradient(circle at 15% -10%, rgba(255,138,61,0.12), transparent 45%),
+      radial-gradient(circle at 90% 10%, rgba(59,130,246,0.10), transparent 40%),
+      var(--bg);
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif; padding:1.2rem; color:var(--text);
+  }
+  .card{
+    background:var(--card); border-radius:1.4rem; border:1px solid var(--border);
+    width:100%; max-width:480px; padding:1.7rem 1.4rem 1.4rem;
+    box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);
+  }
+  .header{display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;}
+  .brand{display:flex; align-items:center; gap:0.6rem;}
+  .brand-icon{
+    width:2.4rem; height:2.4rem; border-radius:0.7rem;
+    background:linear-gradient(135deg,var(--accent1),var(--accent2));
+    display:flex; align-items:center; justify-content:center; font-size:1.2rem;
+    box-shadow:0 6px 16px -4px rgba(255,77,141,0.5);
+  }
+  .brand-text h1{font-size:1.25rem; font-weight:800; letter-spacing:-0.02em;}
+  .brand-text .byline{font-size:0.68rem; color:var(--muted); font-weight:500;}
+  .status-pill{
+    display:flex; align-items:center; gap:0.35rem; font-size:0.68rem; font-weight:600;
+    background:var(--card2); border:1px solid var(--border); padding:0.3rem 0.6rem; border-radius:2rem;
+    color:var(--muted); white-space:nowrap;
+  }
+  .status-dot{width:6px; height:6px; border-radius:50%; background:var(--muted); flex-shrink:0;}
+  .status-pill.ok .status-dot{background:var(--green); box-shadow:0 0 6px var(--green);}
+  .status-pill.ok{color:var(--green);}
+  .status-pill.err .status-dot{background:var(--red);}
+  .status-pill.err{color:var(--red);}
+  .status-pill.busy .status-dot{background:var(--accent1); animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+  .quote-box{
+    background:var(--card2); border-left:3px solid var(--accent1); border-radius:0.8rem;
+    padding:0.9rem 1rem; margin-bottom:1rem;
+  }
+  .quote-text{font-size:0.85rem; color:#c9d1d9; font-style:italic; line-height:1.5;}
+  .quote-author{font-size:0.72rem; color:var(--muted); margin-top:0.35rem; text-align:right;}
+
+  .input-row{display:flex; gap:0.5rem; margin-bottom:0.6rem;}
+  input{
+    flex:1; background:#0d1117; border:1px solid var(--border); border-radius:0.8rem;
+    padding:0.8rem 1rem; color:var(--text); font-size:0.92rem; outline:none; font-family:inherit;
+  }
+  input:focus{border-color:var(--accent1); box-shadow:0 0 0 3px rgba(255,138,61,0.15);}
+  button{
+    border:none; border-radius:0.8rem; font-weight:700; font-size:0.88rem; cursor:pointer;
+    font-family:inherit; transition:transform 0.12s ease, opacity 0.12s ease;
+  }
+  button:active{transform:scale(0.95);}
+  button:disabled{opacity:0.45; cursor:not-allowed; transform:none;}
+  #addBtn{
+    background:linear-gradient(135deg,var(--accent1),var(--accent2)); color:#fff;
+    padding:0.8rem 1.1rem; white-space:nowrap;
+  }
+  .links-title{
+    color:var(--muted); font-size:0.68rem; text-transform:uppercase; letter-spacing:0.08em;
+    margin:1.1rem 0 0.55rem; display:flex; justify-content:space-between; align-items:center; font-weight:700;
+  }
+  .refresh-btn{background:none; border:none; color:var(--muted); font-size:0.95rem; cursor:pointer; padding:0.2rem;}
+  .refresh-btn:hover{color:var(--text);}
+  .refresh-btn.spin{animation:spin 0.6s linear;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .link-item{
+    background:var(--card2); border:1px solid var(--border); border-radius:0.85rem;
+    padding:0.65rem 0.8rem; margin-bottom:0.5rem; display:flex; align-items:center; gap:0.65rem;
+  }
+  .favicon{width:20px; height:20px; border-radius:0.35rem; flex-shrink:0; background:#0d1117;}
+  .link-info{flex:1; min-width:0;}
+  .link-url{
+    color:var(--text); font-size:0.85rem; font-weight:500; overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; text-decoration:none; display:block;
+  }
+  .link-meta{font-size:0.68rem; color:var(--muted); margin-top:0.1rem;}
+  .link-actions{display:flex; align-items:center; gap:0.3rem; flex-shrink:0;}
+  .icon-btn{
+    background:var(--card); border:1px solid var(--border); color:var(--muted);
+    width:2rem; height:2rem; border-radius:0.55rem; display:flex; align-items:center; justify-content:center;
+    font-size:0.85rem; cursor:pointer;
+  }
+  .icon-btn.visit:hover{color:var(--blue); border-color:var(--blue);}
+  .icon-btn.del:hover{color:var(--red); border-color:var(--red);}
+
+  .empty{color:#4a5264; text-align:center; font-size:0.85rem; padding:2rem 1rem;}
+  .empty .e-icon{font-size:1.8rem; margin-bottom:0.4rem; display:block;}
+
+  .clear-row{margin-top:0.9rem; text-align:center;}
+  #clearBtn{
+    background:none; border:none; color:var(--muted); font-size:0.75rem; cursor:pointer;
+    padding:0.4rem; text-decoration:underline; text-underline-offset:2px;
+  }
+  #clearBtn:hover{color:var(--red);}
+
+  .footer{text-align:center; margin-top:1.2rem; font-size:0.68rem; color:#3d4453;}
+  .footer span{color:var(--accent1); font-weight:600;}
+
+  .toast{
+    position:fixed; bottom:1.6rem; left:50%; transform:translateX(-50%);
+    background:#1c2129; border:1px solid var(--border); color:var(--text);
+    padding:0.7rem 1.2rem; border-radius:0.8rem; font-size:0.82rem; font-weight:500;
+    z-index:999; box-shadow:0 10px 30px -10px rgba(0,0,0,0.6); transition:opacity 0.3s, transform 0.3s;
+  }
+  .toast.err{border-color:var(--red); color:#ffb4b4;}
+  .toast.ok{border-color:var(--green);}
 </style>
 </head>
 <body>
   <div class="card">
     <div class="header">
-      <h1>📦 DropIt</h1>
-      <div class="byline">written by <strong>Sanjeet</strong></div>
+      <div class="brand">
+        <div class="brand-icon">📦</div>
+        <div class="brand-text">
+          <h1>DropIt</h1>
+          <div class="byline">by Sanjeet</div>
+        </div>
+      </div>
+      <div class="status-pill" id="statusPill"><span class="status-dot"></span><span id="statusText">Connecting</span></div>
     </div>
-    <div class="sync-status" id="syncStatus">Connecting…</div>
 
     <div class="quote-box">
       <div class="quote-text" id="quoteText">Loading quote...</div>
@@ -62,34 +149,39 @@
     </div>
 
     <div class="links-title">
-      <span>📋 saved links <span id="countSpan">(0)</span></span>
-      <button class="refresh-btn" id="refreshBtn" title="Refresh now">↻ refresh</button>
+      <span>Saved links <span id="countSpan">(0)</span></span>
+      <button class="refresh-btn" id="refreshBtn" title="Refresh now">↻</button>
     </div>
-    <div id="linksContainer"><div class="empty">Loading…</div></div>
+    <div id="linksContainer"><div class="empty"><span class="e-icon">🔗</span>Loading…</div></div>
 
-    <div class="input-row" style="margin-top:0.8rem;">
-      <button class="blue" id="copyBtn">📋 Copy Shareable Link</button>
-      <button class="red" id="clearBtn">🗑 Clear All</button>
-    </div>
+    <div class="clear-row"><button id="clearBtn">Clear all links</button></div>
 
     <div class="footer">crafted by <span>Sanjeet</span></div>
   </div>
 
 <script>
 (function(){
+  // ==============================================================
+  // CONFIG — Your jsonbin.io credentials
+  // ==============================================================
+  const JSONBIN_ID  = "6a6c0fb0f5f4af5e29d8675b";
+  const JSONBIN_KEY = "$2a$10$KQ.9P55cj.ZAv3izMLaTLeQH1uC6aaqHWKpuAvxMOSQVrrqFu/m3G";
+  const API_BASE = "https://api.jsonbin.io/v3/b/" + JSONBIN_ID;
+
+  const isConfigured = true;
+
   // ------------------------------------------------------------
-  // QUOTE (unrelated to sync — unchanged)
+  // Quote of the day
   // ------------------------------------------------------------
   async function fetchQuote(){
     try{
-      const r = await fetch("https://api.quotable.io/random?tags=philosophy|wisdom|love|success|solitude|courage|perseverance");
+      const r = await fetch("https://api.quotable.io/random?tags=philosophy|wisdom|success|perseverance");
       const d = await r.json();
       document.getElementById("quoteText").textContent = '"' + d.content + '"';
       document.getElementById("quoteAuthor").textContent = '— ' + d.author;
     }catch(e){
       const fb = [
         {t:"The wound is the place where the Light enters you.",a:"Rumi"},
-        {t:"He who has a why to live can bear almost any how.",a:"Nietzsche"},
         {t:"In the middle of difficulty lies opportunity.",a:"Einstein"}
       ];
       const r = fb[Math.floor(Math.random()*fb.length)];
@@ -100,152 +192,222 @@
   fetchQuote();
 
   // ------------------------------------------------------------
-  // SHARED CROSS-DEVICE STORAGE
-  // Every device that opens the SAME URL (same #listId) reads and
-  // writes the SAME record in shared storage. No manual re-copying
-  // of a link is required after every change.
+  // State + DOM refs
   // ------------------------------------------------------------
-  var links = [];
-  var listId = null;
-  var storageKey = null;
-  var pollTimer = null;
-  var lastKnownJSON = null;
-  var saving = false;
+  let links = [];
+  let lastKnownJSON = null;
+  let saving = false;
+  let pollTimer = null;
 
-  var linkInput = document.getElementById("linkInput");
-  var addBtn = document.getElementById("addBtn");
-  var linksContainer = document.getElementById("linksContainer");
-  var countSpan = document.getElementById("countSpan");
-  var copyBtn = document.getElementById("copyBtn");
-  var clearBtn = document.getElementById("clearBtn");
-  var refreshBtn = document.getElementById("refreshBtn");
-  var syncStatus = document.getElementById("syncStatus");
+  const linkInput = document.getElementById("linkInput");
+  const addBtn = document.getElementById("addBtn");
+  const linksContainer = document.getElementById("linksContainer");
+  const countSpan = document.getElementById("countSpan");
+  const clearBtn = document.getElementById("clearBtn");
+  const refreshBtn = document.getElementById("refreshBtn");
+  const statusPill = document.getElementById("statusPill");
+  const statusText = document.getElementById("statusText");
 
-  function genId(){
-    return Math.random().toString(36).slice(2,8) + Date.now().toString(36).slice(-6);
+  function setStatus(text, cls){
+    statusText.textContent = text;
+    statusPill.className = "status-pill" + (cls ? (" " + cls) : "");
   }
 
-  function ensureListId(){
-    var hash = window.location.hash.substring(1);
-    if (hash && /^[a-z0-9]+$/i.test(hash)) {
-      listId = hash;
-    } else {
-      listId = genId();
-      history.replaceState(null, "", window.location.pathname + "#" + listId);
-    }
-    storageKey = "list:" + listId;
-  }
-
-  function setStatus(msg, cls){
-    syncStatus.textContent = msg;
-    syncStatus.className = "sync-status" + (cls ? (" " + cls) : "");
-  }
-
-  function showToast(msg, isErr){
-    var existing = document.querySelector(".toast");
+  function showToast(msg, kind){
+    const existing = document.querySelector(".toast");
     if (existing) existing.remove();
-    var toast = document.createElement("div");
-    toast.className = "toast" + (isErr ? " err" : "");
+    const toast = document.createElement("div");
+    toast.className = "toast" + (kind ? (" " + kind) : "");
     toast.textContent = msg;
     document.body.appendChild(toast);
     setTimeout(function(){
       toast.style.opacity = "0";
       setTimeout(function(){ toast.remove(); }, 300);
-    }, 2000);
+    }, 2200);
+  }
+
+  function timeAgo(ts){
+    if (!ts) return "";
+    const diff = Math.max(0, Date.now() - ts);
+    const m = Math.floor(diff/60000);
+    if (m < 1) return "just now";
+    if (m < 60) return m + "m ago";
+    const h = Math.floor(m/60);
+    if (h < 24) return h + "h ago";
+    return Math.floor(h/24) + "d ago";
+  }
+
+  function faviconFor(url){
+    try{
+      const host = new URL(url).hostname;
+      return "https://www.google.com/s2/favicons?sz=64&domain=" + host;
+    }catch(e){ return ""; }
   }
 
   function render(){
     countSpan.textContent = "(" + links.length + ")";
     linksContainer.innerHTML = "";
     if (links.length === 0) {
-      linksContainer.innerHTML = '<div class="empty">No links yet. Add one above.</div>';
+      linksContainer.innerHTML = '<div class="empty"><span class="e-icon">🔗</span>No links yet. Add one above.</div>';
       return;
     }
-    for (var i = links.length - 1; i >= 0; i--) {
+    for (let i = links.length - 1; i >= 0; i--) {
       (function(index){
-        var url = links[index];
-        var div = document.createElement("div");
+        const item = links[index];
+        const url = typeof item === "string" ? item : item.url;
+        const addedAt = typeof item === "string" ? null : item.addedAt;
+
+        const div = document.createElement("div");
         div.className = "link-item";
 
-        var a = document.createElement("a");
+        const fav = document.createElement("img");
+        fav.className = "favicon";
+        fav.src = faviconFor(url);
+        fav.alt = "";
+        fav.onerror = function(){ fav.style.visibility = "hidden"; };
+
+        const info = document.createElement("div");
+        info.className = "link-info";
+        const a = document.createElement("a");
         a.className = "link-url";
         a.textContent = url;
         a.title = url;
         a.href = url;
         a.target = "_blank";
         a.rel = "noopener";
+        const meta = document.createElement("div");
+        meta.className = "link-meta";
+        meta.textContent = timeAgo(addedAt);
+        info.appendChild(a);
+        info.appendChild(meta);
 
-        var visitBtn = document.createElement("button");
-        visitBtn.className = "visit-btn";
-        visitBtn.textContent = "Visit →";
+        const actions = document.createElement("div");
+        actions.className = "link-actions";
+
+        const visitBtn = document.createElement("button");
+        visitBtn.className = "icon-btn visit";
+        visitBtn.textContent = "↗";
+        visitBtn.title = "Visit";
         visitBtn.onclick = function(e){ e.stopPropagation(); window.open(url, "_blank", "noopener"); };
 
-        var delBtn = document.createElement("button");
-        delBtn.className = "del-btn";
+        const delBtn = document.createElement("button");
+        delBtn.className = "icon-btn del";
         delBtn.textContent = "✕";
+        delBtn.title = "Delete";
         delBtn.onclick = function(e){
           e.stopPropagation();
           links.splice(index, 1);
           persist("Link removed");
         };
 
-        div.appendChild(a);
-        div.appendChild(visitBtn);
-        div.appendChild(delBtn);
+        actions.appendChild(visitBtn);
+        actions.appendChild(delBtn);
+        div.appendChild(fav);
+        div.appendChild(info);
+        div.appendChild(actions);
         linksContainer.appendChild(div);
       })(i);
     }
   }
 
-  // Write current `links` array to shared storage, then render.
+  // ------------------------------------------------------------
+  // Storage — JSONBin.io
+  // ------------------------------------------------------------
+  async function apiGet(){
+    const res = await fetch(API_BASE + "/latest", {
+      headers: { "X-Master-Key": JSONBIN_KEY, "X-Bin-Meta": "false" }
+    });
+    if (!res.ok) throw new Error("GET failed: " + res.status);
+    return await res.json();
+  }
+
+  async function apiPut(data){
+    const res = await fetch(API_BASE, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "X-Master-Key": JSONBIN_KEY },
+      body: JSON.stringify(data)
+    });
+    if (!res.ok) throw new Error("PUT failed: " + res.status);
+  }
+
   async function persist(successMsg){
     render();
     saving = true;
-    setStatus("Syncing…");
+    setStatus("Syncing", "busy");
     try{
-      var json = JSON.stringify(links);
-      var result = await window.storage.set(storageKey, json, true);
-      if (!result) throw new Error("empty result");
-      lastKnownJSON = json;
-      setStatus("Synced ✓", "ok");
-      if (successMsg) showToast(successMsg);
+      await apiPut(links);
+      lastKnownJSON = JSON.stringify(links);
+      setStatus("Synced", "ok");
+      if (successMsg) showToast(successMsg, "ok");
     }catch(e){
-      setStatus("Sync failed — will retry", "err");
-      showToast("Could not sync — check connection", true);
+      setStatus("Sync failed", "err");
+      showToast("Couldn't save — check your connection", "err");
     }
     saving = false;
   }
 
-  // Pull latest from shared storage (used on load and on poll).
-  async function fetchRemote(showLoadingToast){
+  async function fetchRemote(announce){
     try{
-      var result = await window.storage.get(storageKey, true);
-      var json = result ? result.value : "[]";
+      const data = await apiGet();
+      const json = JSON.stringify(data);
       if (json !== lastKnownJSON) {
         lastKnownJSON = json;
-        try {
-          var parsed = JSON.parse(json);
-          links = Array.isArray(parsed) ? parsed : [];
-        } catch(parseErr) {
-          links = [];
-        }
+        links = Array.isArray(data) ? data : [];
         render();
-        if (showLoadingToast) showToast("Updated from other device");
+        if (announce) showToast("Updated from another device", "ok");
       }
-      setStatus("Synced ✓", "ok");
+      setStatus("Synced", "ok");
     }catch(e){
-      // Key doesn't exist yet (first time this list is used) — that's fine.
-      if (lastKnownJSON === null) {
-        links = [];
-        lastKnownJSON = "[]";
-        render();
-        setStatus("Synced ✓ (new list)", "ok");
-      } else {
-        setStatus("Offline — showing last synced copy", "err");
-      }
+      setStatus(lastKnownJSON === null ? "Can't connect" : "Offline", "err");
     }
   }
 
+  function startPolling(){
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(function(){
+      if (!saving) fetchRemote(true);
+    }, 5000);
+  }
+
+  // ------------------------------------------------------------
+  // Actions
+  // ------------------------------------------------------------
+  addBtn.onclick = function(){
+    let url = linkInput.value.trim();
+    if (!url) { showToast("Please paste a link", "err"); return; }
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    try { new URL(url); } catch(e){ showToast("That doesn't look like a valid link", "err"); return; }
+    links.push({ url: url, addedAt: Date.now() });
+    linkInput.value = "";
+    persist("Link added");
+  };
+
+  linkInput.onkeypress = function(e){ if (e.key === "Enter") addBtn.onclick(); };
+
+  clearBtn.onclick = function(){
+    if (links.length === 0) return;
+    if (confirm("Delete all " + links.length + " links?")) {
+      links = [];
+      persist("All cleared");
+    }
+  };
+
+  refreshBtn.onclick = function(){
+    refreshBtn.classList.add("spin");
+    fetchRemote(true).finally(function(){
+      setTimeout(function(){ refreshBtn.classList.remove("spin"); }, 600);
+    });
+  };
+
+  // ------------------------------------------------------------
+  // Init
+  // ------------------------------------------------------------
+  fetchRemote(false);
+  startPolling();
+})();
+</script>
+</body>
+</html>
   function startPolling(){
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(function(){
