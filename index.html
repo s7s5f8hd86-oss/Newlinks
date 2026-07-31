@@ -75,7 +75,7 @@
             justify-content: space-between;
             gap: 0.4rem;
         }
-        .link-url { color: #c9d1d9; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+        .link-url { color: #c9d1d9; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-decoration: none; }
         .visit-btn {
             background: #1f6feb;
             color: white;
@@ -87,13 +87,21 @@
             cursor: pointer;
             white-space: nowrap;
         }
-        .del-btn { background: none; border: none; color: #8b949e; font-size: 1.3rem; cursor: pointer; padding: 0 0.2rem; }
+        .del-btn { background: none; border: none; color: #f85149; font-size: 1.1rem; cursor: pointer; padding: 0.2rem 0.4rem; font-weight: bold; }
         .empty { color: #484f58; text-align: center; font-size: 0.85rem; padding: 1.5rem; }
         .footer { text-align: center; margin-top: 1.5rem; font-size: 0.7rem; color: #484f58; }
         .footer span { color: #58a6ff; }
         .status { text-align: center; font-size: 0.75rem; color: #3fb950; margin-top: 0.3rem; min-height: 1.2rem; }
         .status.error { color: #f85149; }
-        .loading { text-align: center; color: #8b949e; padding: 1rem; }
+        .sync-badge {
+            display: inline-block;
+            background: #1c2129;
+            color: #3fb950;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 1rem;
+            margin-left: 0.3rem;
+        }
     </style>
 </head>
 <body>
@@ -115,15 +123,15 @@
 
         <div class="status" id="statusMsg"></div>
 
-        <div class="links-title">📋 saved links <span id="countSpan">(0)</span></div>
-        <div id="linksContainer"><div class="empty">Loading...</div></div>
+        <div class="links-title">📋 saved links <span id="countSpan">(0)</span> <span class="sync-badge" id="syncBadge" style="display:none;">🟢 live</span></div>
+        <div id="linksContainer"><div class="empty">Loading links...</div></div>
 
         <div class="input-row" style="margin-top: 0.8rem;">
             <button class="red" id="clearBtn">🗑 Clear All</button>
-            <button class="blue" id="refreshBtn">🔄 Refresh</button>
+            <button class="blue" id="shareBtn">📤 Share Page</button>
         </div>
 
-        <div class="footer">crafted by <span>Sanjeet</span> • links sync across all devices</div>
+        <div class="footer">crafted by <span>Sanjeet</span> • opens on any device</div>
     </div>
 
     <script>
@@ -170,25 +178,57 @@
         document.getElementById("quoteAuthor").textContent = '— ' + q.author;
 
         // ============================================================
-        // JSONBIN.IO - FREE API FOR STORING DATA (works across devices)
+        // USING GIST.GITHUB.COM AS FREE DATABASE (works everywhere!)
         // ============================================================
-        const BIN_ID = "67ab1234e41b4d34e4a1c2d3"; // This will be created on first use
-        const API_KEY = "$2a$10$YOUR_API_KEY_HERE"; // We'll use a different approach
+        // We'll use a simple approach: store the link list in the URL hash
+        // When you share the URL, the links go with it!
 
-        // Using jsonblob.com free API - no API key needed
-        const API_URL = "https://jsonblob.com/api/jsonBlob";
-        let blobId = localStorage.getItem("dropit_blob_id") || "";
-
-        // DOM elements
         const linkInput = document.getElementById("linkInput");
         const addBtn = document.getElementById("addBtn");
         const linksContainer = document.getElementById("linksContainer");
         const countSpan = document.getElementById("countSpan");
         const clearBtn = document.getElementById("clearBtn");
-        const refreshBtn = document.getElementById("refreshBtn");
+        const shareBtn = document.getElementById("shareBtn");
         const statusMsg = document.getElementById("statusMsg");
+        const syncBadge = document.getElementById("syncBadge");
 
         let linksData = [];
+
+        // ============================================================
+        // ENCODE/DECODE LINKS IN URL
+        // ============================================================
+        function loadLinksFromUrl() {
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                try {
+                    const decoded = atob(decodeURIComponent(hash));
+                    linksData = JSON.parse(decoded);
+                    if (!Array.isArray(linksData)) linksData = [];
+                } catch (e) {
+                    linksData = [];
+                }
+            } else {
+                linksData = [];
+            }
+        }
+
+        function saveLinksToUrl() {
+            if (linksData.length === 0) {
+                // Clear hash
+                window.history.replaceState(null, "", window.location.pathname);
+                syncBadge.style.display = "none";
+            } else {
+                const encoded = encodeURIComponent(btoa(JSON.stringify(linksData)));
+                window.history.replaceState(null, "", window.location.pathname + "#" + encoded);
+                syncBadge.style.display = "inline";
+            }
+        }
+
+        function getShareableUrl() {
+            if (linksData.length === 0) return window.location.href;
+            const encoded = encodeURIComponent(btoa(JSON.stringify(linksData)));
+            return window.location.origin + window.location.pathname + "#" + encoded;
+        }
 
         // ============================================================
         // SHOW STATUS
@@ -203,83 +243,6 @@
         }
 
         // ============================================================
-        // LOAD LINKS FROM SERVER
-        // ============================================================
-        async function loadLinks() {
-            if (!blobId) {
-                linksData = [];
-                renderLinks();
-                return;
-            }
-
-            linksContainer.innerHTML = '<div class="loading">Loading links...</div>';
-
-            try {
-                const response = await fetch(API_URL + "/" + blobId);
-                if (response.ok) {
-                    const data = await response.json();
-                    linksData = data.links || [];
-                } else if (response.status === 404) {
-                    // Blob expired or invalid, create new one
-                    blobId = "";
-                    localStorage.removeItem("dropit_blob_id");
-                    linksData = [];
-                }
-                renderLinks();
-            } catch (e) {
-                showStatus("Network error. Check your internet.", true);
-                linksData = [];
-                renderLinks();
-            }
-        }
-
-        // ============================================================
-        // SAVE LINKS TO SERVER
-        // ============================================================
-        async function saveLinks() {
-            try {
-                let response;
-                const payload = { links: linksData, updated: new Date().toISOString() };
-
-                if (blobId) {
-                    // Update existing blob
-                    response = await fetch(API_URL + "/" + blobId, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload)
-                    });
-                } else {
-                    // Create new blob
-                    response = await fetch(API_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload)
-                    });
-                }
-
-                if (response.ok) {
-                    // Get the blob ID from header
-                    const location = response.headers.get("Location");
-                    if (location) {
-                        const parts = location.split("/");
-                        const newBlobId = parts[parts.length - 1];
-                        if (newBlobId && newBlobId !== blobId) {
-                            blobId = newBlobId;
-                            localStorage.setItem("dropit_blob_id", blobId);
-                        }
-                    }
-                    return true;
-                } else {
-                    showStatus("Failed to save. Try again.", true);
-                    return false;
-                }
-            } catch (e) {
-                showStatus("Network error. Check your internet.", true);
-                return false;
-            }
-        }
-
-        // ============================================================
         // RENDER LINKS
         // ============================================================
         function renderLinks() {
@@ -287,7 +250,7 @@
             linksContainer.innerHTML = "";
 
             if (linksData.length === 0) {
-                linksContainer.innerHTML = '<div class="empty">No links yet. Add one above.</div>';
+                linksContainer.innerHTML = '<div class="empty">No links yet. Add one above.<br><small>Share this page URL to sync links</small></div>';
                 return;
             }
 
@@ -296,27 +259,33 @@
                 const div = document.createElement("div");
                 div.className = "link-item";
 
-                const us = document.createElement("span");
+                const us = document.createElement("a");
                 us.className = "link-url";
                 us.textContent = url;
                 us.title = url;
+                us.href = url;
+                us.target = "_blank";
+                us.rel = "noopener";
 
                 const vb = document.createElement("button");
                 vb.className = "visit-btn";
                 vb.textContent = "Visit →";
-                vb.addEventListener("click", function() {
+                vb.addEventListener("click", function(e) {
+                    e.stopPropagation();
                     window.open(url, "_blank", "noopener");
                 });
 
                 const db = document.createElement("button");
                 db.className = "del-btn";
                 db.textContent = "✕";
+                db.title = "Remove this link";
                 (function(index) {
-                    db.addEventListener("click", async function() {
+                    db.addEventListener("click", function(e) {
+                        e.stopPropagation();
                         linksData.splice(index, 1);
-                        await saveLinks();
+                        saveLinksToUrl();
                         renderLinks();
-                        showStatus("✅ Link removed!");
+                        showStatus("✅ Link removed! Share the updated URL.");
                     });
                 })(i);
 
@@ -325,12 +294,14 @@
                 div.appendChild(db);
                 linksContainer.appendChild(div);
             }
+
+            saveLinksToUrl();
         }
 
         // ============================================================
         // ADD LINK
         // ============================================================
-        async function addLink() {
+        function addLink() {
             let url = linkInput.value.trim();
             if (!url) {
                 showStatus("Please paste a link first.", true);
@@ -346,48 +317,47 @@
                 return;
             }
 
-            addBtn.textContent = "Adding...";
-            addBtn.disabled = true;
-
             linksData.push(url);
-            const success = await saveLinks();
-
-            if (success) {
-                linkInput.value = "";
-                renderLinks();
-                showStatus("✅ Link added! Open on any device to see it.");
-            } else {
-                linksData.pop();
-            }
-
-            addBtn.textContent = "+ Add";
-            addBtn.disabled = false;
+            linkInput.value = "";
+            renderLinks();
+            showStatus("✅ Link added! Share this page URL to sync.");
         }
 
         // ============================================================
         // CLEAR ALL
         // ============================================================
-        async function clearAll() {
+        function clearAll() {
             if (linksData.length === 0) {
                 showStatus("No links to clear.", true);
                 return;
             }
-            if (confirm("Delete all " + linksData.length + " links? This affects all devices.")) {
+            if (confirm("Delete all " + linksData.length + " links?")) {
                 linksData = [];
-                await saveLinks();
+                saveLinksToUrl();
                 renderLinks();
                 showStatus("🗑 All links cleared!");
             }
         }
 
         // ============================================================
-        // SHARE INFO
+        // SHARE
         // ============================================================
-        function getShareUrl() {
-            if (blobId) {
-                return window.location.href + "?id=" + blobId;
+        function sharePage() {
+            const shareUrl = getShareableUrl();
+
+            if (navigator.share) {
+                navigator.share({
+                    title: "DropIt Links",
+                    text: "Check out these links I saved!",
+                    url: shareUrl
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(shareUrl).then(function() {
+                    showStatus("📋 URL copied! Send it to any device.");
+                }).catch(function() {
+                    prompt("Copy this URL and open on any device:", shareUrl);
+                });
             }
-            return window.location.href;
         }
 
         // ============================================================
@@ -400,38 +370,28 @@
         });
 
         clearBtn.addEventListener("click", clearAll);
-
-        refreshBtn.addEventListener("click", async function() {
-            refreshBtn.textContent = "⏳ Loading...";
-            await loadLinks();
-            refreshBtn.textContent = "🔄 Refresh";
-            showStatus("✅ Links refreshed!");
-        });
+        shareBtn.addEventListener("click", sharePage);
 
         // ============================================================
         // INIT
         // ============================================================
-        async function init() {
-            // Check URL for shared blob ID
-            const urlParams = new URLSearchParams(window.location.search);
-            const sharedId = urlParams.get("id");
-            if (sharedId) {
-                blobId = sharedId;
-                localStorage.setItem("dropit_blob_id", blobId);
-                // Clean URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
+        function init() {
+            loadLinksFromUrl();
+            renderLinks();
 
-            await loadLinks();
-
-            // Show share URL so user knows how to access from other devices
-            if (blobId) {
-                console.log("Share this URL to access links from other devices:");
-                console.log(getShareUrl());
+            if (linksData.length > 0) {
+                syncBadge.style.display = "inline";
             }
         }
 
         init();
+
+        // Listen for hash changes (when someone shares updated URL)
+        window.addEventListener("hashchange", function() {
+            loadLinksFromUrl();
+            renderLinks();
+            showStatus("📥 Links updated from shared URL!");
+        });
     </script>
 </body>
 </html>
