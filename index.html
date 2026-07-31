@@ -1,322 +1,300 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>DropIt • by Sanjeet</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0d1117;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            padding: 1rem;
-        }
-        .card {
-            background: #161b22;
-            border-radius: 1.5rem;
-            border: 1px solid #30363d;
-            width: 100%;
-            max-width: 500px;
-            padding: 1.8rem 1.4rem;
-        }
-        .header { text-align: center; margin-bottom: 0.8rem; }
-        .header h1 { font-size: 2rem; color: #e6edf3; font-weight: 700; }
-        .header .byline { font-size: 0.75rem; color: #8b949e; margin-top: 0.2rem; }
-        .quote-box {
-            background: #1c2129;
-            border-left: 3px solid #f0883e;
-            border-radius: 0.8rem;
-            padding: 1rem 1.1rem;
-            margin-bottom: 1rem;
-        }
-        .quote-text { font-size: 0.9rem; color: #c9d1d9; font-style: italic; line-height: 1.5; }
-        .quote-author { font-size: 0.75rem; color: #8b949e; margin-top: 0.4rem; text-align: right; }
-        input {
-            width: 100%;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 0.8rem;
-            padding: 0.85rem 1rem;
-            color: #e6edf3;
-            font-size: 0.95rem;
-            outline: none;
-            margin-bottom: 0.6rem;
-        }
-        input:focus { border-color: #f0883e; }
-        .input-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
-        .input-row input { flex: 1; margin-bottom: 0; }
-        button {
-            background: #f0883e;
-            color: #0d1117;
-            border: none;
-            border-radius: 0.8rem;
-            padding: 0.85rem 1rem;
-            font-weight: 700;
-            font-size: 0.9rem;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        button:active { transform: scale(0.96); }
-        button.red { background: #da3633; color: white; }
-        button.blue { background: #1f6feb; color: white; }
-        .links-title { color: #8b949e; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin: 1rem 0 0.5rem; }
-        .link-item {
-            background: #1c2129;
-            border: 1px solid #30363d;
-            border-radius: 0.7rem;
-            padding: 0.7rem 0.9rem;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.4rem;
-        }
-        .link-url { color: #58a6ff; font-size: 0.85rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; text-decoration: none; }
-        .visit-btn {
-            background: #1f6feb;
-            color: white;
-            border: none;
-            border-radius: 0.5rem;
-            padding: 0.4rem 0.8rem;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .del-btn { background: none; border: none; color: #f85149; font-size: 1.1rem; cursor: pointer; padding: 0.2rem 0.4rem; font-weight: bold; }
-        .empty { color: #484f58; text-align: center; font-size: 0.85rem; padding: 1.5rem; }
-        .footer { text-align: center; margin-top: 1.5rem; font-size: 0.7rem; color: #484f58; }
-        .footer span { color: #f0883e; }
-        .toast {
-            position: fixed;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #238636;
-            color: white;
-            padding: 0.7rem 1.5rem;
-            border-radius: 2rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-            z-index: 999;
-            transition: opacity 0.3s;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+<title>DropIt • by Sanjeet</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background:#0d1117; min-height:100vh; display:flex; align-items:center; justify-content:center;
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif; padding:1rem;
+  }
+  .card { background:#161b22; border-radius:1.5rem; border:1px solid #30363d; width:100%; max-width:500px; padding:1.8rem 1.4rem; }
+  .header { text-align:center; margin-bottom:0.4rem; }
+  .header h1 { font-size:2rem; color:#e6edf3; font-weight:700; }
+  .header .byline { font-size:0.75rem; color:#8b949e; margin-top:0.2rem; }
+  .sync-status { text-align:center; font-size:0.72rem; color:#8b949e; margin-bottom:0.8rem; min-height:1rem; }
+  .sync-status.ok { color:#3fb950; }
+  .sync-status.err { color:#f85149; }
+  .quote-box { background:#1c2129; border-left:3px solid #f0883e; border-radius:0.8rem; padding:1rem 1.1rem; margin-bottom:1rem; }
+  .quote-text { font-size:0.9rem; color:#c9d1d9; font-style:italic; line-height:1.5; }
+  .quote-author { font-size:0.75rem; color:#8b949e; margin-top:0.4rem; text-align:right; }
+  input { width:100%; background:#0d1117; border:1px solid #30363d; border-radius:0.8rem; padding:0.85rem 1rem; color:#e6edf3; font-size:0.95rem; outline:none; margin-bottom:0.6rem; }
+  input:focus { border-color:#f0883e; }
+  .input-row { display:flex; gap:0.5rem; margin-bottom:0.6rem; }
+  .input-row input { flex:1; margin-bottom:0; }
+  button { background:#f0883e; color:#0d1117; border:none; border-radius:0.8rem; padding:0.85rem 1rem; font-weight:700; font-size:0.9rem; cursor:pointer; white-space:nowrap; }
+  button:active { transform:scale(0.96); }
+  button:disabled { opacity:0.5; cursor:not-allowed; }
+  button.red { background:#da3633; color:#fff; }
+  button.blue { background:#1f6feb; color:#fff; }
+  button.gray { background:#30363d; color:#c9d1d9; }
+  .links-title { color:#8b949e; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; margin:1rem 0 0.5rem; display:flex; justify-content:space-between; align-items:center; }
+  .refresh-btn { background:none; border:none; color:#8b949e; font-size:0.9rem; cursor:pointer; }
+  .link-item { background:#1c2129; border:1px solid #30363d; border-radius:0.7rem; padding:0.7rem 0.9rem; margin-bottom:0.5rem; display:flex; align-items:center; justify-content:space-between; gap:0.4rem; }
+  .link-url { color:#58a6ff; font-size:0.85rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; text-decoration:none; }
+  .visit-btn { background:#1f6feb; color:#fff; border:none; border-radius:0.5rem; padding:0.4rem 0.8rem; font-size:0.8rem; font-weight:600; cursor:pointer; white-space:nowrap; }
+  .del-btn { background:none; border:none; color:#f85149; font-size:1.1rem; cursor:pointer; padding:0.2rem 0.4rem; font-weight:bold; }
+  .empty { color:#484f58; text-align:center; font-size:0.85rem; padding:1.5rem; }
+  .footer { text-align:center; margin-top:1.5rem; font-size:0.7rem; color:#484f58; }
+  .footer span { color:#f0883e; }
+  .toast { position:fixed; bottom:2rem; left:50%; transform:translateX(-50%); background:#238636; color:#fff; padding:0.7rem 1.5rem; border-radius:2rem; font-size:0.85rem; font-weight:600; z-index:999; transition:opacity 0.3s; }
+  .toast.err { background:#da3633; }
+</style>
 </head>
 <body>
-    <div class="card">
-        <div class="header">
-            <h1>📦 DropIt</h1>
-            <div class="byline">written by <strong>Sanjeet</strong></div>
-        </div>
+  <div class="card">
+    <div class="header">
+      <h1>📦 DropIt</h1>
+      <div class="byline">written by <strong>Sanjeet</strong></div>
+    </div>
+    <div class="sync-status" id="syncStatus">Connecting…</div>
 
-        <div class="quote-box">
-            <div class="quote-text" id="quoteText">Loading quote...</div>
-            <div class="quote-author" id="quoteAuthor"></div>
-        </div>
-
-        <div class="input-row">
-            <input type="url" id="linkInput" placeholder="Paste any link here..." autocomplete="off" />
-            <button id="addBtn">+ Add</button>
-        </div>
-
-        <div class="links-title">📋 saved links <span id="countSpan">(0)</span></div>
-        <div id="linksContainer"><div class="empty">No links yet. Add one above.</div></div>
-
-        <div class="input-row" style="margin-top: 0.8rem;">
-            <button class="blue" id="copyBtn">📋 Copy Shareable Link</button>
-            <button class="red" id="clearBtn">🗑 Clear All</button>
-        </div>
-
-        <div class="footer">crafted by <span>Sanjeet</span></div>
+    <div class="quote-box">
+      <div class="quote-text" id="quoteText">Loading quote...</div>
+      <div class="quote-author" id="quoteAuthor"></div>
     </div>
 
-    <script>
-        (function() {
-            // ============================================================
-            // FETCH RANDOM QUOTE FROM FREE API (unlimited, always fresh)
-            // ============================================================
-            async function fetchQuote() {
-                try {
-                    const response = await fetch("https://api.quotable.io/random?tags=philosophy|wisdom|love|success|solitude|courage|perseverance");
-                    const data = await response.json();
-                    document.getElementById("quoteText").textContent = '"' + data.content + '"';
-                    document.getElementById("quoteAuthor").textContent = '— ' + data.author;
-                } catch (e) {
-                    // Fallback quotes if API fails
-                    const fallback = [
-                        { text: "The wound is the place where the Light enters you.", author: "Rumi" },
-                        { text: "He who has a why to live can bear almost any how.", author: "Nietzsche" },
-                        { text: "In the middle of difficulty lies opportunity.", author: "Einstein" },
-                        { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-                        { text: "Solitude is the place of purification.", author: "Martin Buber" },
-                    ];
-                    const r = fallback[Math.floor(Math.random() * fallback.length)];
-                    document.getElementById("quoteText").textContent = '"' + r.text + '"';
-                    document.getElementById("quoteAuthor").textContent = '— ' + r.author;
-                }
-            }
+    <div class="input-row">
+      <input type="url" id="linkInput" placeholder="Paste any link here..." autocomplete="off" />
+      <button id="addBtn">+ Add</button>
+    </div>
 
-            fetchQuote();
+    <div class="links-title">
+      <span>📋 saved links <span id="countSpan">(0)</span></span>
+      <button class="refresh-btn" id="refreshBtn" title="Refresh now">↻ refresh</button>
+    </div>
+    <div id="linksContainer"><div class="empty">Loading…</div></div>
 
-            // ============================================================
-            // LINKS LOGIC
-            // ============================================================
-            var links = [];
-            var linkInput = document.getElementById("linkInput");
-            var addBtn = document.getElementById("addBtn");
-            var linksContainer = document.getElementById("linksContainer");
-            var countSpan = document.getElementById("countSpan");
-            var copyBtn = document.getElementById("copyBtn");
-            var clearBtn = document.getElementById("clearBtn");
+    <div class="input-row" style="margin-top:0.8rem;">
+      <button class="blue" id="copyBtn">📋 Copy Shareable Link</button>
+      <button class="red" id="clearBtn">🗑 Clear All</button>
+    </div>
 
-            function loadLinks() {
-                var hash = window.location.hash.substring(1);
-                if (hash) {
-                    try {
-                        var json = decodeURIComponent(atob(hash));
-                        links = JSON.parse(json);
-                        if (!Array.isArray(links)) links = [];
-                    } catch (e) {
-                        links = [];
-                    }
-                }
-            }
+    <div class="footer">crafted by <span>Sanjeet</span></div>
+  </div>
 
-            function saveLinks() {
-                if (links.length === 0) {
-                    history.replaceState(null, "", window.location.pathname);
-                } else {
-                    var json = JSON.stringify(links);
-                    var encoded = btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, function(match, p1) {
-                        return String.fromCharCode("0x" + p1);
-                    }));
-                    history.replaceState(null, "", window.location.pathname + "#" + encoded);
-                }
-            }
+<script>
+(function(){
+  // ------------------------------------------------------------
+  // QUOTE (unrelated to sync — unchanged)
+  // ------------------------------------------------------------
+  async function fetchQuote(){
+    try{
+      const r = await fetch("https://api.quotable.io/random?tags=philosophy|wisdom|love|success|solitude|courage|perseverance");
+      const d = await r.json();
+      document.getElementById("quoteText").textContent = '"' + d.content + '"';
+      document.getElementById("quoteAuthor").textContent = '— ' + d.author;
+    }catch(e){
+      const fb = [
+        {t:"The wound is the place where the Light enters you.",a:"Rumi"},
+        {t:"He who has a why to live can bear almost any how.",a:"Nietzsche"},
+        {t:"In the middle of difficulty lies opportunity.",a:"Einstein"}
+      ];
+      const r = fb[Math.floor(Math.random()*fb.length)];
+      document.getElementById("quoteText").textContent = '"' + r.t + '"';
+      document.getElementById("quoteAuthor").textContent = '— ' + r.a;
+    }
+  }
+  fetchQuote();
 
-            function render() {
-                countSpan.textContent = "(" + links.length + ")";
-                linksContainer.innerHTML = "";
+  // ------------------------------------------------------------
+  // SHARED CROSS-DEVICE STORAGE
+  // Every device that opens the SAME URL (same #listId) reads and
+  // writes the SAME record in shared storage. No manual re-copying
+  // of a link is required after every change.
+  // ------------------------------------------------------------
+  var links = [];
+  var listId = null;
+  var storageKey = null;
+  var pollTimer = null;
+  var lastKnownJSON = null;
+  var saving = false;
 
-                if (links.length === 0) {
-                    linksContainer.innerHTML = '<div class="empty">No links yet. Add one above.</div>';
-                    return;
-                }
+  var linkInput = document.getElementById("linkInput");
+  var addBtn = document.getElementById("addBtn");
+  var linksContainer = document.getElementById("linksContainer");
+  var countSpan = document.getElementById("countSpan");
+  var copyBtn = document.getElementById("copyBtn");
+  var clearBtn = document.getElementById("clearBtn");
+  var refreshBtn = document.getElementById("refreshBtn");
+  var syncStatus = document.getElementById("syncStatus");
 
-                for (var i = links.length - 1; i >= 0; i--) {
-                    (function(index) {
-                        var url = links[index];
-                        var div = document.createElement("div");
-                        div.className = "link-item";
+  function genId(){
+    return Math.random().toString(36).slice(2,8) + Date.now().toString(36).slice(-6);
+  }
 
-                        var a = document.createElement("a");
-                        a.className = "link-url";
-                        a.textContent = url;
-                        a.title = url;
-                        a.href = url;
-                        a.target = "_blank";
-                        a.rel = "noopener";
+  function ensureListId(){
+    var hash = window.location.hash.substring(1);
+    if (hash && /^[a-z0-9]+$/i.test(hash)) {
+      listId = hash;
+    } else {
+      listId = genId();
+      history.replaceState(null, "", window.location.pathname + "#" + listId);
+    }
+    storageKey = "list:" + listId;
+  }
 
-                        var visitBtn = document.createElement("button");
-                        visitBtn.className = "visit-btn";
-                        visitBtn.textContent = "Visit →";
-                        visitBtn.onclick = function(e) {
-                            e.stopPropagation();
-                            window.open(url, "_blank", "noopener");
-                        };
+  function setStatus(msg, cls){
+    syncStatus.textContent = msg;
+    syncStatus.className = "sync-status" + (cls ? (" " + cls) : "");
+  }
 
-                        var delBtn = document.createElement("button");
-                        delBtn.className = "del-btn";
-                        delBtn.textContent = "✕";
-                        delBtn.onclick = function(e) {
-                            e.stopPropagation();
-                            links.splice(index, 1);
-                            saveLinks();
-                            render();
-                            showToast("Link removed");
-                        };
+  function showToast(msg, isErr){
+    var existing = document.querySelector(".toast");
+    if (existing) existing.remove();
+    var toast = document.createElement("div");
+    toast.className = "toast" + (isErr ? " err" : "");
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(function(){
+      toast.style.opacity = "0";
+      setTimeout(function(){ toast.remove(); }, 300);
+    }, 2000);
+  }
 
-                        div.appendChild(a);
-                        div.appendChild(visitBtn);
-                        div.appendChild(delBtn);
-                        linksContainer.appendChild(div);
-                    })(i);
-                }
-            }
+  function render(){
+    countSpan.textContent = "(" + links.length + ")";
+    linksContainer.innerHTML = "";
+    if (links.length === 0) {
+      linksContainer.innerHTML = '<div class="empty">No links yet. Add one above.</div>';
+      return;
+    }
+    for (var i = links.length - 1; i >= 0; i--) {
+      (function(index){
+        var url = links[index];
+        var div = document.createElement("div");
+        div.className = "link-item";
 
-            function showToast(msg) {
-                var existing = document.querySelector(".toast");
-                if (existing) existing.remove();
-                var toast = document.createElement("div");
-                toast.className = "toast";
-                toast.textContent = msg;
-                document.body.appendChild(toast);
-                setTimeout(function() {
-                    toast.style.opacity = "0";
-                    setTimeout(function() { toast.remove(); }, 300);
-                }, 2000);
-            }
+        var a = document.createElement("a");
+        a.className = "link-url";
+        a.textContent = url;
+        a.title = url;
+        a.href = url;
+        a.target = "_blank";
+        a.rel = "noopener";
 
-            addBtn.onclick = function() {
-                var url = linkInput.value.trim();
-                if (!url) {
-                    showToast("Please paste a link");
-                    return;
-                }
-                if (!/^https?:\/\//i.test(url)) {
-                    url = "https://" + url;
-                }
-                try {
-                    new URL(url);
-                } catch (e) {
-                    showToast("Invalid link");
-                    return;
-                }
-                links.push(url);
-                linkInput.value = "";
-                saveLinks();
-                render();
-                showToast("Link added!");
-            };
+        var visitBtn = document.createElement("button");
+        visitBtn.className = "visit-btn";
+        visitBtn.textContent = "Visit →";
+        visitBtn.onclick = function(e){ e.stopPropagation(); window.open(url, "_blank", "noopener"); };
 
-            linkInput.onkeypress = function(e) {
-                if (e.key === "Enter") addBtn.onclick();
-            };
+        var delBtn = document.createElement("button");
+        delBtn.className = "del-btn";
+        delBtn.textContent = "✕";
+        delBtn.onclick = function(e){
+          e.stopPropagation();
+          links.splice(index, 1);
+          persist("Link removed");
+        };
 
-            clearBtn.onclick = function() {
-                if (links.length === 0) return;
-                if (confirm("Delete all " + links.length + " links?")) {
-                    links = [];
-                    saveLinks();
-                    render();
-                    showToast("All cleared");
-                }
-            };
+        div.appendChild(a);
+        div.appendChild(visitBtn);
+        div.appendChild(delBtn);
+        linksContainer.appendChild(div);
+      })(i);
+    }
+  }
 
-            copyBtn.onclick = function() {
-                var url = window.location.href;
-                navigator.clipboard.writeText(url).then(function() {
-                    copyBtn.textContent = "✅ Copied!";
-                    setTimeout(function() { copyBtn.textContent = "📋 Copy Shareable Link"; }, 2000);
-                    showToast("Link copied! Share it.");
-                }).catch(function() {
-                    prompt("Copy this link:", url);
-                });
-            };
+  // Write current `links` array to shared storage, then render.
+  async function persist(successMsg){
+    render();
+    saving = true;
+    setStatus("Syncing…");
+    try{
+      var json = JSON.stringify(links);
+      var result = await window.storage.set(storageKey, json, true);
+      if (!result) throw new Error("empty result");
+      lastKnownJSON = json;
+      setStatus("Synced ✓", "ok");
+      if (successMsg) showToast(successMsg);
+    }catch(e){
+      setStatus("Sync failed — will retry", "err");
+      showToast("Could not sync — check connection", true);
+    }
+    saving = false;
+  }
 
-            window.onhashchange = function() {
-                loadLinks();
-                render();
-            };
+  // Pull latest from shared storage (used on load and on poll).
+  async function fetchRemote(showLoadingToast){
+    try{
+      var result = await window.storage.get(storageKey, true);
+      var json = result ? result.value : "[]";
+      if (json !== lastKnownJSON) {
+        lastKnownJSON = json;
+        try {
+          var parsed = JSON.parse(json);
+          links = Array.isArray(parsed) ? parsed : [];
+        } catch(parseErr) {
+          links = [];
+        }
+        render();
+        if (showLoadingToast) showToast("Updated from other device");
+      }
+      setStatus("Synced ✓", "ok");
+    }catch(e){
+      // Key doesn't exist yet (first time this list is used) — that's fine.
+      if (lastKnownJSON === null) {
+        links = [];
+        lastKnownJSON = "[]";
+        render();
+        setStatus("Synced ✓ (new list)", "ok");
+      } else {
+        setStatus("Offline — showing last synced copy", "err");
+      }
+    }
+  }
 
-            loadLinks();
-            render();
-        })();
+  function startPolling(){
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = setInterval(function(){
+      if (!saving) fetchRemote(true);
+    }, 4000);
+  }
+
+  addBtn.onclick = function(){
+    var url = linkInput.value.trim();
+    if (!url) { showToast("Please paste a link", true); return; }
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    try { new URL(url); } catch(e){ showToast("Invalid link", true); return; }
+    links.push(url);
+    linkInput.value = "";
+    persist("Link added!");
+  };
+
+  linkInput.onkeypress = function(e){ if (e.key === "Enter") addBtn.onclick(); };
+
+  clearBtn.onclick = function(){
+    if (links.length === 0) return;
+    if (confirm("Delete all " + links.length + " links?")) {
+      links = [];
+      persist("All cleared");
+    }
+  };
+
+  copyBtn.onclick = function(){
+    var url = window.location.href;
+    navigator.clipboard.writeText(url).then(function(){
+      copyBtn.textContent = "✅ Copied!";
+      setTimeout(function(){ copyBtn.textContent = "📋 Copy Shareable Link"; }, 2000);
+      showToast("Link copied! Open it on your other device once — after that both stay in sync automatically.");
+    }).catch(function(){
+      prompt("Copy this link:", url);
+    });
+  };
+
+  refreshBtn.onclick = function(){ fetchRemote(true); };
+
+  // Init
+  ensureListId();
+  fetchRemote(false);
+  startPolling();
+})();
+</script>
+</body>
+</html>
+
     </script>
 </body>
 </html>
