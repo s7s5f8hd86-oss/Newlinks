@@ -28,7 +28,7 @@
         .header .byline { font-size: 0.75rem; color: #8b949e; margin-top: 0.2rem; }
         .quote-box {
             background: #1c2129;
-            border-left: 3px solid #58a6ff;
+            border-left: 3px solid #f0883e;
             border-radius: 0.8rem;
             padding: 1rem 1.1rem;
             margin-bottom: 1.2rem;
@@ -46,23 +46,23 @@
             outline: none;
             margin-bottom: 0.6rem;
         }
-        input:focus { border-color: #58a6ff; }
+        input:focus { border-color: #f0883e; }
         .input-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
         .input-row input { flex: 1; margin-bottom: 0; }
         button {
-            background: #238636;
-            color: white;
+            background: #f0883e;
+            color: #0d1117;
             border: none;
             border-radius: 0.8rem;
             padding: 0.85rem 1rem;
-            font-weight: 600;
+            font-weight: 700;
             font-size: 0.9rem;
             cursor: pointer;
             white-space: nowrap;
         }
         button:active { transform: scale(0.96); }
-        button.red { background: #da3633; }
-        button.blue { background: #1f6feb; }
+        button.red { background: #da3633; color: white; }
+        button.blue { background: #1f6feb; color: white; }
         .links-title { color: #8b949e; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin: 1rem 0 0.5rem; }
         .link-item {
             background: #1c2129;
@@ -95,28 +95,14 @@
         .del-btn { background: none; border: none; color: #f85149; font-size: 1.1rem; cursor: pointer; padding: 0.2rem 0.4rem; font-weight: bold; }
         .empty { color: #484f58; text-align: center; font-size: 0.85rem; padding: 1.5rem; }
         .footer { text-align: center; margin-top: 1.5rem; font-size: 0.7rem; color: #484f58; }
-        .footer span { color: #58a6ff; }
+        .footer span { color: #f0883e; }
         .status { text-align: center; font-size: 0.75rem; color: #3fb950; margin-top: 0.3rem; min-height: 1.2rem; }
         .status.error { color: #f85149; }
-        .sync-indicator {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.3rem;
-            margin-bottom: 1rem;
-            font-size: 0.7rem;
+        .synced { 
+            text-align: center;
+            font-size: 0.65rem;
             color: #3fb950;
-        }
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: #3fb950;
-            border-radius: 50%;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
+            margin-bottom: 0.5rem;
         }
     </style>
 </head>
@@ -132,16 +118,13 @@
             <div class="quote-author" id="quoteAuthor"></div>
         </div>
 
-        <div class="sync-indicator" id="syncIndicator" style="display:none;">
-            <div class="dot"></div> <span>live sync active</span>
-        </div>
-
         <div class="input-row">
             <input type="url" id="linkInput" placeholder="Paste any link here..." autocomplete="off" />
             <button id="addBtn">+ Add</button>
         </div>
 
         <div class="status" id="statusMsg"></div>
+        <div class="synced" id="syncedMsg"></div>
 
         <div class="links-title">📋 saved links <span id="countSpan">(0)</span></div>
         <div id="linksContainer"><div class="empty">Loading links...</div></div>
@@ -151,10 +134,10 @@
             <button class="blue" id="refreshBtn">🔄 Refresh</button>
         </div>
 
-        <div class="footer">crafted by <span>Sanjeet</span> • opens on any device</div>
+        <div class="footer">crafted by <span>Sanjeet</span> • syncs across all devices</div>
     </div>
 
-    <script>
+    <script type="module">
         // ============================================================
         // DAILY QUOTES
         // ============================================================
@@ -188,10 +171,24 @@
         document.getElementById("quoteAuthor").textContent = '— ' + q.author;
 
         // ============================================================
-        // USING NPOINT.IO - SIMPLE FREE JSON STORE (NO SIGNUP)
+        // FIREBASE - REAL WORKING CONFIG
         // ============================================================
-        const STORE_ID = "dropitglobal123";
-        const API_URL = "https://api.npoint.io";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getDatabase, ref, onValue, push, set, remove } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDHNvTk_FqHGzWVsVFlSNvZcHACePMhNtY",
+            authDomain: "dropit-4e051.firebaseapp.com",
+            databaseURL: "https://dropit-4e051-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "dropit-4e051",
+            storageBucket: "dropit-4e051.appspot.com",
+            messagingSenderId: "89000375334",
+            appId: "1:89000375334:web:7b16f68fc2f3aef9c1b927"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const linksRef = ref(db, "shared-links");
 
         // DOM
         const linkInput = document.getElementById("linkInput");
@@ -201,37 +198,36 @@
         const clearBtn = document.getElementById("clearBtn");
         const refreshBtn = document.getElementById("refreshBtn");
         const statusMsg = document.getElementById("statusMsg");
-        const syncIndicator = document.getElementById("syncIndicator");
-
-        let linksData = [];
-        let jsonId = localStorage.getItem("dropit_json_id") || "";
+        const syncedMsg = document.getElementById("syncedMsg");
 
         // ============================================================
-        // STATUS
+        // REAL-TIME LISTENER
         // ============================================================
-        function showStatus(msg, isError) {
-            statusMsg.textContent = msg;
-            statusMsg.className = "status";
-            if (isError) statusMsg.className = "status error";
-            setTimeout(() => { statusMsg.textContent = ""; }, 3000);
-        }
+        onValue(linksRef, (snapshot) => {
+            const data = snapshot.val();
+            const links = data ? Object.entries(data).map(([id, url]) => ({ id, url })) : [];
+            renderLinks(links);
+            syncedMsg.textContent = "🟢 Live sync active";
+        }, (error) => {
+            console.error("Firebase error:", error);
+            syncedMsg.textContent = "🔴 Offline - check internet";
+        });
 
         // ============================================================
         // RENDER
         // ============================================================
-        function renderLinks() {
-            countSpan.textContent = "(" + linksData.length + ")";
+        function renderLinks(links) {
+            countSpan.textContent = "(" + links.length + ")";
             linksContainer.innerHTML = "";
 
-            if (linksData.length === 0) {
-                linksContainer.innerHTML = '<div class="empty">No links yet. Add one above.<br><small>Open this page on any device to sync</small></div>';
-                syncIndicator.style.display = "none";
+            if (links.length === 0) {
+                linksContainer.innerHTML = '<div class="empty">No links yet. Add one above.<br><small>Open on any device — links appear instantly</small></div>';
                 return;
             }
 
-            syncIndicator.style.display = "flex";
+            links.reverse();
 
-            linksData.forEach((url, i) => {
+            links.forEach(({ id, url }) => {
                 const div = document.createElement("div");
                 div.className = "link-item";
 
@@ -254,11 +250,9 @@
                 const db = document.createElement("button");
                 db.className = "del-btn";
                 db.textContent = "✕";
-                db.addEventListener("click", async (e) => {
+                db.addEventListener("click", (e) => {
                     e.stopPropagation();
-                    linksData.splice(i, 1);
-                    await saveToServer();
-                    renderLinks();
+                    remove(ref(db, "shared-links/" + id));
                     showStatus("✅ Link removed!");
                 });
 
@@ -270,76 +264,19 @@
         }
 
         // ============================================================
-        // SAVE TO SERVER
+        // STATUS
         // ============================================================
-        async function saveToServer() {
-            try {
-                let response;
-                if (jsonId) {
-                    // Update existing
-                    response = await fetch(API_URL + "/" + jsonId, {
-                        method: "PUT",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ links: linksData, updated: Date.now() })
-                    });
-                } else {
-                    // Create new
-                    response = await fetch(API_URL, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ links: linksData, updated: Date.now() })
-                    });
-                }
-
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.id) {
-                        jsonId = result.id;
-                        localStorage.setItem("dropit_json_id", jsonId);
-                    }
-                    return true;
-                }
-                return false;
-            } catch (e) {
-                console.error("Save error:", e);
-                return false;
-            }
-        }
-
-        // ============================================================
-        // LOAD FROM SERVER
-        // ============================================================
-        async function loadFromServer() {
-            if (!jsonId) {
-                linksData = [];
-                renderLinks();
-                return;
-            }
-
-            try {
-                const response = await fetch(API_URL + "/" + jsonId);
-                if (response.ok) {
-                    const data = await response.json();
-                    linksData = data.links || [];
-                } else {
-                    // ID invalid, reset
-                    jsonId = "";
-                    localStorage.removeItem("dropit_json_id");
-                    linksData = [];
-                }
-                renderLinks();
-            } catch (e) {
-                console.error("Load error:", e);
-                // Keep current data
-                renderLinks();
-                showStatus("⚠ Could not reach server. Showing saved links.", true);
-            }
+        function showStatus(msg, isError) {
+            statusMsg.textContent = msg;
+            statusMsg.className = "status";
+            if (isError) statusMsg.className = "status error";
+            setTimeout(() => { statusMsg.textContent = ""; }, 3000);
         }
 
         // ============================================================
         // ADD LINK
         // ============================================================
-        async function addLink() {
+        function addLink() {
             let url = linkInput.value.trim();
             if (!url) {
                 showStatus("Please paste a link first.", true);
@@ -355,46 +292,25 @@
                 return;
             }
 
-            addBtn.textContent = "Saving...";
-            addBtn.disabled = true;
-
-            linksData.push(url);
-            const saved = await saveToServer();
-
-            if (saved) {
+            const newRef = push(linksRef);
+            set(newRef, url).then(() => {
                 linkInput.value = "";
-                renderLinks();
-                showStatus("✅ Link saved! Open on any device & refresh.");
-            } else {
-                // Keep it anyway but warn
-                linkInput.value = "";
-                renderLinks();
-                showStatus("⚠ Saved locally. Tap Refresh later.", true);
-            }
-
-            addBtn.textContent = "+ Add";
-            addBtn.disabled = false;
+                showStatus("✅ Link added! Instantly visible everywhere.");
+            }).catch(() => {
+                showStatus("❌ Failed. Check internet.", true);
+            });
         }
 
         // ============================================================
         // CLEAR ALL
         // ============================================================
-        async function clearAll() {
-            if (linksData.length === 0) {
-                showStatus("No links to clear.", true);
-                return;
-            }
-            if (!confirm("Delete all " + linksData.length + " links?")) return;
-
-            linksData = [];
-            const saved = await saveToServer();
-            renderLinks();
-
-            if (saved) {
+        function clearAll() {
+            if (!confirm("Delete ALL links? This syncs across all devices.")) return;
+            set(linksRef, null).then(() => {
                 showStatus("🗑 All links cleared!");
-            } else {
-                showStatus("🗑 Cleared locally. Refresh later.", true);
-            }
+            }).catch(() => {
+                showStatus("❌ Failed to clear.", true);
+            });
         }
 
         // ============================================================
@@ -405,25 +321,12 @@
             if (e.key === "Enter") addLink();
         });
         clearBtn.addEventListener("click", clearAll);
-        refreshBtn.addEventListener("click", async () => {
-            refreshBtn.textContent = "⏳ Loading...";
-            await loadFromServer();
-            refreshBtn.textContent = "🔄 Refresh";
-            showStatus("✅ Synced from server!");
+        refreshBtn.addEventListener("click", () => {
+            syncedMsg.textContent = "🟢 Live sync is automatic — no refresh needed!";
+            setTimeout(() => {
+                syncedMsg.textContent = "🟢 Live sync active";
+            }, 2000);
         });
-
-        // ============================================================
-        // INIT
-        // ============================================================
-        async function init() {
-            await loadFromServer();
-            // Auto-refresh every 30 seconds
-            setInterval(async () => {
-                await loadFromServer();
-            }, 30000);
-        }
-
-        init();
     </script>
 </body>
 </html>
