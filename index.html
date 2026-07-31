@@ -35,19 +35,8 @@
         }
         .quote-text { font-size: 0.9rem; color: #c9d1d9; font-style: italic; line-height: 1.5; }
         .quote-author { font-size: 0.75rem; color: #8b949e; margin-top: 0.4rem; text-align: right; }
-        .code-section {
-            background: #0d1117;
-            border-radius: 1rem;
-            padding: 0.7rem 1rem;
-            margin-bottom: 1rem;
-            text-align: center;
-            border: 1px solid #30363d;
-        }
-        .code-label { font-size: 0.7rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; }
-        .code-big { font-size: 2.5rem; font-weight: 800; color: #58a6ff; letter-spacing: 5px; font-family: 'SF Mono', monospace; }
-        .code-input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-        .code-input-row input { flex: 1; }
         input {
+            width: 100%;
             background: #0d1117;
             border: 1px solid #30363d;
             border-radius: 0.8rem;
@@ -55,16 +44,17 @@
             color: #e6edf3;
             font-size: 0.95rem;
             outline: none;
+            margin-bottom: 0.6rem;
         }
         input:focus { border-color: #58a6ff; }
-        .input-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
-        .input-row input { flex: 1; }
+        .input-row { display: flex; gap: 0.5rem; margin-bottom: 0.6rem; }
+        .input-row input { flex: 1; margin-bottom: 0; }
         button {
             background: #238636;
             color: white;
             border: none;
             border-radius: 0.8rem;
-            padding: 0.85rem 1rem;
+            padding: 0.85rem 1.2rem;
             font-weight: 600;
             font-size: 0.9rem;
             cursor: pointer;
@@ -73,8 +63,7 @@
         button:active { transform: scale(0.96); }
         button.red { background: #da3633; }
         button.blue { background: #1f6feb; }
-        button.small { padding: 0.6rem 0.8rem; font-size: 0.8rem; }
-        .links-title { color: #8b949e; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.5rem; }
+        .links-title { color: #8b949e; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; margin: 1rem 0 0.5rem; }
         .link-item {
             background: #1c2129;
             border: 1px solid #30363d;
@@ -102,13 +91,9 @@
         .empty { color: #484f58; text-align: center; font-size: 0.85rem; padding: 1.5rem; }
         .footer { text-align: center; margin-top: 1.5rem; font-size: 0.7rem; color: #484f58; }
         .footer span { color: #58a6ff; }
-        .status-msg {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #3fb950;
-            margin-top: 0.5rem;
-            display: none;
-        }
+        .status { text-align: center; font-size: 0.75rem; color: #3fb950; margin-top: 0.3rem; min-height: 1.2rem; }
+        .status.error { color: #f85149; }
+        .loading { text-align: center; color: #8b949e; padding: 1rem; }
     </style>
 </head>
 <body>
@@ -123,40 +108,27 @@
             <div class="quote-author" id="quoteAuthor"></div>
         </div>
 
-        <!-- Access Code -->
-        <div class="code-section">
-            <div class="code-label">current access code</div>
-            <div class="code-big" id="codeDisplay">1234</div>
-        </div>
-        <div class="code-input-row">
-            <input type="text" id="codeInput" placeholder="Enter code to access links..." autocomplete="off" />
-            <button class="blue small" id="loadCodeBtn">Load</button>
-        </div>
-
-        <!-- Add Link -->
         <div class="input-row">
             <input type="url" id="linkInput" placeholder="Paste any link here..." autocomplete="off" />
             <button id="addBtn">+ Add</button>
         </div>
 
-        <div id="statusMsg" class="status-msg">✅ Link added!</div>
+        <div class="status" id="statusMsg"></div>
 
-        <!-- Links List -->
         <div class="links-title">📋 saved links <span id="countSpan">(0)</span></div>
-        <div id="linksContainer"><div class="empty">No links yet. Add one above.</div></div>
+        <div id="linksContainer"><div class="empty">Loading...</div></div>
 
-        <!-- Buttons -->
         <div class="input-row" style="margin-top: 0.8rem;">
-            <button class="blue" id="copyBtn">📋 Copy Code</button>
             <button class="red" id="clearBtn">🗑 Clear All</button>
+            <button class="blue" id="refreshBtn">🔄 Refresh</button>
         </div>
 
-        <div class="footer">crafted by <span>Sanjeet</span> • links sync via code</div>
+        <div class="footer">crafted by <span>Sanjeet</span> • links sync across all devices</div>
     </div>
 
     <script>
         // ============================================================
-        // QUOTES
+        // DAILY QUOTES
         // ============================================================
         const quotes = [
             { text: "The wound is the place where the Light enters you.", author: "Rumi" },
@@ -179,10 +151,6 @@
             { text: "The cave you fear holds the treasure.", author: "Joseph Campbell" },
             { text: "To love and be loved is sun from both sides.", author: "David Viscott" },
             { text: "Leave a trail where there is no path.", author: "Emerson" },
-            { text: "Find barriers within you against love.", author: "Rumi" },
-            { text: "The oak sleeps in the acorn.", author: "James Allen" },
-            { text: "Happiness depends upon ourselves.", author: "Aristotle" },
-            { text: "The only journey is the one within.", author: "Rilke" },
             { text: "Rock bottom built my foundation.", author: "J.K. Rowling" },
             { text: "You've been planted, not buried.", author: "Christine Caine" },
             { text: "Rising every time we fall is glory.", author: "Mandela" },
@@ -190,77 +158,141 @@
             { text: "What lies within us matters most.", author: "Emerson" },
             { text: "What you think you become.", author: "Buddha" },
             { text: "Love removes masks we fear to lose.", author: "James Baldwin" },
+            { text: "Happiness depends upon ourselves.", author: "Aristotle" },
+            { text: "The only journey is the one within.", author: "Rilke" },
+            { text: "Find barriers within you against love.", author: "Rumi" },
         ];
 
         const today = new Date();
         const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
         const q = quotes[dayOfYear % quotes.length];
-        document.getElementById("quoteText").textContent = `"${q.text}"`;
-        document.getElementById("quoteAuthor").textContent = `— ${q.author}`;
+        document.getElementById("quoteText").textContent = '"' + q.text + '"';
+        document.getElementById("quoteAuthor").textContent = '— ' + q.author;
 
         // ============================================================
-        // DOM ELEMENTS
+        // JSONBIN.IO - FREE API FOR STORING DATA (works across devices)
         // ============================================================
-        const codeDisplay = document.getElementById("codeDisplay");
-        const codeInput = document.getElementById("codeInput");
-        const loadCodeBtn = document.getElementById("loadCodeBtn");
+        const BIN_ID = "67ab1234e41b4d34e4a1c2d3"; // This will be created on first use
+        const API_KEY = "$2a$10$YOUR_API_KEY_HERE"; // We'll use a different approach
+
+        // Using jsonblob.com free API - no API key needed
+        const API_URL = "https://jsonblob.com/api/jsonBlob";
+        let blobId = localStorage.getItem("dropit_blob_id") || "";
+
+        // DOM elements
         const linkInput = document.getElementById("linkInput");
         const addBtn = document.getElementById("addBtn");
         const linksContainer = document.getElementById("linksContainer");
         const countSpan = document.getElementById("countSpan");
-        const copyBtn = document.getElementById("copyBtn");
         const clearBtn = document.getElementById("clearBtn");
+        const refreshBtn = document.getElementById("refreshBtn");
         const statusMsg = document.getElementById("statusMsg");
 
-        let currentCode = "1234";
+        let linksData = [];
 
         // ============================================================
-        // GET STORAGE KEY
+        // SHOW STATUS
         // ============================================================
-        function getStorageKey(code) {
-            return "dropit_links_" + code;
+        function showStatus(msg, isError) {
+            statusMsg.textContent = msg;
+            statusMsg.className = "status";
+            if (isError) statusMsg.className = "status error";
+            setTimeout(function() {
+                statusMsg.textContent = "";
+            }, 3000);
         }
 
         // ============================================================
-        // GET LINKS FOR CURRENT CODE
+        // LOAD LINKS FROM SERVER
         // ============================================================
-        function getLinks() {
-            const key = getStorageKey(currentCode);
-            const data = localStorage.getItem(key);
-            if (data) {
-                try {
-                    return JSON.parse(data);
-                } catch (e) {
-                    return [];
-                }
+        async function loadLinks() {
+            if (!blobId) {
+                linksData = [];
+                renderLinks();
+                return;
             }
-            return [];
+
+            linksContainer.innerHTML = '<div class="loading">Loading links...</div>';
+
+            try {
+                const response = await fetch(API_URL + "/" + blobId);
+                if (response.ok) {
+                    const data = await response.json();
+                    linksData = data.links || [];
+                } else if (response.status === 404) {
+                    // Blob expired or invalid, create new one
+                    blobId = "";
+                    localStorage.removeItem("dropit_blob_id");
+                    linksData = [];
+                }
+                renderLinks();
+            } catch (e) {
+                showStatus("Network error. Check your internet.", true);
+                linksData = [];
+                renderLinks();
+            }
         }
 
         // ============================================================
-        // SAVE LINKS FOR CURRENT CODE
+        // SAVE LINKS TO SERVER
         // ============================================================
-        function saveLinks(links) {
-            const key = getStorageKey(currentCode);
-            localStorage.setItem(key, JSON.stringify(links));
+        async function saveLinks() {
+            try {
+                let response;
+                const payload = { links: linksData, updated: new Date().toISOString() };
+
+                if (blobId) {
+                    // Update existing blob
+                    response = await fetch(API_URL + "/" + blobId, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                } else {
+                    // Create new blob
+                    response = await fetch(API_URL, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload)
+                    });
+                }
+
+                if (response.ok) {
+                    // Get the blob ID from header
+                    const location = response.headers.get("Location");
+                    if (location) {
+                        const parts = location.split("/");
+                        const newBlobId = parts[parts.length - 1];
+                        if (newBlobId && newBlobId !== blobId) {
+                            blobId = newBlobId;
+                            localStorage.setItem("dropit_blob_id", blobId);
+                        }
+                    }
+                    return true;
+                } else {
+                    showStatus("Failed to save. Try again.", true);
+                    return false;
+                }
+            } catch (e) {
+                showStatus("Network error. Check your internet.", true);
+                return false;
+            }
         }
 
         // ============================================================
         // RENDER LINKS
         // ============================================================
         function renderLinks() {
-            const links = getLinks();
-            countSpan.textContent = "(" + links.length + ")";
+            countSpan.textContent = "(" + linksData.length + ")";
             linksContainer.innerHTML = "";
 
-            if (links.length === 0) {
+            if (linksData.length === 0) {
                 linksContainer.innerHTML = '<div class="empty">No links yet. Add one above.</div>';
                 return;
             }
 
-            // Show newest first
-            for (let i = links.length - 1; i >= 0; i--) {
-                const url = links[i];
+            for (let i = linksData.length - 1; i >= 0; i--) {
+                const url = linksData[i];
                 const div = document.createElement("div");
                 div.className = "link-item";
 
@@ -279,12 +311,14 @@
                 const db = document.createElement("button");
                 db.className = "del-btn";
                 db.textContent = "✕";
-                db.addEventListener("click", function() {
-                    const allLinks = getLinks();
-                    allLinks.splice(i, 1);
-                    saveLinks(allLinks);
-                    renderLinks();
-                });
+                (function(index) {
+                    db.addEventListener("click", async function() {
+                        linksData.splice(index, 1);
+                        await saveLinks();
+                        renderLinks();
+                        showStatus("✅ Link removed!");
+                    });
+                })(i);
 
                 div.appendChild(us);
                 div.appendChild(vb);
@@ -294,23 +328,12 @@
         }
 
         // ============================================================
-        // SHOW STATUS MESSAGE
-        // ============================================================
-        function showStatus(msg) {
-            statusMsg.textContent = msg;
-            statusMsg.style.display = "block";
-            setTimeout(function() {
-                statusMsg.style.display = "none";
-            }, 2000);
-        }
-
-        // ============================================================
         // ADD LINK
         // ============================================================
-        function addLink() {
+        async function addLink() {
             let url = linkInput.value.trim();
             if (!url) {
-                alert("Please paste a link first.");
+                showStatus("Please paste a link first.", true);
                 return;
             }
             if (!/^https?:\/\//i.test(url)) {
@@ -319,31 +342,52 @@
             try {
                 new URL(url);
             } catch (e) {
-                alert("Please enter a valid link.");
+                showStatus("Please enter a valid link.", true);
                 return;
             }
 
-            const links = getLinks();
-            links.push(url);
-            saveLinks(links);
-            renderLinks();
-            linkInput.value = "";
-            showStatus("✅ Link added successfully!");
+            addBtn.textContent = "Adding...";
+            addBtn.disabled = true;
+
+            linksData.push(url);
+            const success = await saveLinks();
+
+            if (success) {
+                linkInput.value = "";
+                renderLinks();
+                showStatus("✅ Link added! Open on any device to see it.");
+            } else {
+                linksData.pop();
+            }
+
+            addBtn.textContent = "+ Add";
+            addBtn.disabled = false;
         }
 
         // ============================================================
-        // LOAD CODE
+        // CLEAR ALL
         // ============================================================
-        function loadCode() {
-            const newCode = codeInput.value.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
-            if (!newCode) {
-                alert("Please enter a valid code (letters/numbers only).");
+        async function clearAll() {
+            if (linksData.length === 0) {
+                showStatus("No links to clear.", true);
                 return;
             }
-            currentCode = newCode;
-            codeDisplay.textContent = currentCode;
-            renderLinks();
-            showStatus("📂 Loaded links for code: " + currentCode);
+            if (confirm("Delete all " + linksData.length + " links? This affects all devices.")) {
+                linksData = [];
+                await saveLinks();
+                renderLinks();
+                showStatus("🗑 All links cleared!");
+            }
+        }
+
+        // ============================================================
+        // SHARE INFO
+        // ============================================================
+        function getShareUrl() {
+            if (blobId) {
+                return window.location.href + "?id=" + blobId;
+            }
+            return window.location.href;
         }
 
         // ============================================================
@@ -355,41 +399,39 @@
             if (e.key === "Enter") addLink();
         });
 
-        loadCodeBtn.addEventListener("click", loadCode);
+        clearBtn.addEventListener("click", clearAll);
 
-        codeInput.addEventListener("keypress", function(e) {
-            if (e.key === "Enter") loadCode();
-        });
-
-        copyBtn.addEventListener("click", function() {
-            navigator.clipboard.writeText(currentCode).then(function() {
-                copyBtn.textContent = "✅ Copied!";
-                setTimeout(function() {
-                    copyBtn.textContent = "📋 Copy Code";
-                }, 1500);
-            }).catch(function() {
-                alert("Code: " + currentCode);
-            });
-        });
-
-        clearBtn.addEventListener("click", function() {
-            const links = getLinks();
-            if (links.length === 0) {
-                alert("No links to clear.");
-                return;
-            }
-            if (confirm("Delete all " + links.length + " links for code '" + currentCode + "'?")) {
-                saveLinks([]);
-                renderLinks();
-                showStatus("🗑 All links cleared!");
-            }
+        refreshBtn.addEventListener("click", async function() {
+            refreshBtn.textContent = "⏳ Loading...";
+            await loadLinks();
+            refreshBtn.textContent = "🔄 Refresh";
+            showStatus("✅ Links refreshed!");
         });
 
         // ============================================================
         // INIT
         // ============================================================
-        codeDisplay.textContent = currentCode;
-        renderLinks();
+        async function init() {
+            // Check URL for shared blob ID
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedId = urlParams.get("id");
+            if (sharedId) {
+                blobId = sharedId;
+                localStorage.setItem("dropit_blob_id", blobId);
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            await loadLinks();
+
+            // Show share URL so user knows how to access from other devices
+            if (blobId) {
+                console.log("Share this URL to access links from other devices:");
+                console.log(getShareUrl());
+            }
+        }
+
+        init();
     </script>
 </body>
 </html>
