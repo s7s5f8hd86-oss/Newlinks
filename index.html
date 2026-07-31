@@ -23,7 +23,7 @@
             max-width: 500px;
             padding: 1.8rem 1.4rem;
         }
-        .header { text-align: center; margin-bottom: 1rem; }
+        .header { text-align: center; margin-bottom: 0.8rem; }
         .header h1 { font-size: 2rem; color: #e6edf3; font-weight: 700; }
         .header .byline { font-size: 0.75rem; color: #8b949e; margin-top: 0.2rem; }
         .quote-box {
@@ -31,20 +31,10 @@
             border-left: 3px solid #f0883e;
             border-radius: 0.8rem;
             padding: 1rem 1.1rem;
-            margin-bottom: 1.2rem;
+            margin-bottom: 1rem;
         }
         .quote-text { font-size: 0.9rem; color: #c9d1d9; font-style: italic; line-height: 1.5; }
         .quote-author { font-size: 0.75rem; color: #8b949e; margin-top: 0.4rem; text-align: right; }
-        .info-box {
-            background: #1c2129;
-            border: 1px solid #f0883e;
-            border-radius: 0.8rem;
-            padding: 0.8rem 1rem;
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-        .info-box p { color: #f0883e; font-size: 0.8rem; margin: 0; }
-        .info-box strong { color: #fff; }
         input {
             width: 100%;
             background: #0d1117;
@@ -101,6 +91,20 @@
         .empty { color: #484f58; text-align: center; font-size: 0.85rem; padding: 1.5rem; }
         .footer { text-align: center; margin-top: 1.5rem; font-size: 0.7rem; color: #484f58; }
         .footer span { color: #f0883e; }
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #238636;
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 999;
+            transition: opacity 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -111,12 +115,8 @@
         </div>
 
         <div class="quote-box">
-            <div class="quote-text" id="quoteText"></div>
+            <div class="quote-text" id="quoteText">Loading quote...</div>
             <div class="quote-author" id="quoteAuthor"></div>
-        </div>
-
-        <div class="info-box">
-            <p>🔗 <strong>How to sync:</strong> Add links → tap <strong>Copy Link</strong> → open on any device</p>
         </div>
 
         <div class="input-row">
@@ -128,7 +128,7 @@
         <div id="linksContainer"><div class="empty">No links yet. Add one above.</div></div>
 
         <div class="input-row" style="margin-top: 0.8rem;">
-            <button class="blue" id="copyLinkBtn">📋 Copy Shareable Link</button>
+            <button class="blue" id="copyBtn">📋 Copy Shareable Link</button>
             <button class="red" id="clearBtn">🗑 Clear All</button>
         </div>
 
@@ -136,181 +136,187 @@
     </div>
 
     <script>
-        // ============================================================
-        // DAILY QUOTES
-        // ============================================================
-        const quotes = [
-            { text: "The wound is the place where the Light enters you.", author: "Rumi" },
-            { text: "He who has a why to live can bear almost any how.", author: "Nietzsche" },
-            { text: "In the middle of difficulty lies opportunity.", author: "Einstein" },
-            { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
-            { text: "Solitude is the place of purification.", author: "Martin Buber" },
-            { text: "What you seek is seeking you.", author: "Rumi" },
-            { text: "Success is not final, failure is not fatal.", author: "Churchill" },
-            { text: "The unexamined life is not worth living.", author: "Socrates" },
-            { text: "We are what we repeatedly do.", author: "Aristotle" },
-            { text: "Love transforms enemies into friends.", author: "MLK Jr." },
-            { text: "Hard times create strong men.", author: "G. Michael Hopf" },
-            { text: "Become who you truly are.", author: "Carl Jung" },
-            { text: "Be the change you wish to see.", author: "Gandhi" },
-            { text: "Within me there lay an invincible summer.", author: "Camus" },
-            { text: "He who conquers himself is mighty.", author: "Confucius" },
-            { text: "The cave you fear holds the treasure.", author: "Joseph Campbell" },
-            { text: "Rock bottom built my foundation.", author: "J.K. Rowling" },
-            { text: "Rising every time we fall is glory.", author: "Mandela" },
-            { text: "Solitude is the richness of self.", author: "May Sarton" },
-            { text: "What you think you become.", author: "Buddha" },
-        ];
-
-        const today = new Date();
-        const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-        const q = quotes[dayOfYear % quotes.length];
-        document.getElementById("quoteText").textContent = '"' + q.text + '"';
-        document.getElementById("quoteAuthor").textContent = '— ' + q.author;
-
-        // ============================================================
-        // SIMPLE WORKING APPROACH: Store links in URL hash
-        // ============================================================
-
-        let links = [];
-
-        // Load links from URL hash
-        function loadLinks() {
-            const hash = window.location.hash.substring(1);
-            if (hash) {
+        (function() {
+            // ============================================================
+            // FETCH RANDOM QUOTE FROM FREE API (unlimited, always fresh)
+            // ============================================================
+            async function fetchQuote() {
                 try {
-                    const decoded = decodeURIComponent(escape(atob(hash)));
-                    links = JSON.parse(decoded);
+                    const response = await fetch("https://api.quotable.io/random?tags=philosophy|wisdom|love|success|solitude|courage|perseverance");
+                    const data = await response.json();
+                    document.getElementById("quoteText").textContent = '"' + data.content + '"';
+                    document.getElementById("quoteAuthor").textContent = '— ' + data.author;
                 } catch (e) {
-                    links = [];
+                    // Fallback quotes if API fails
+                    const fallback = [
+                        { text: "The wound is the place where the Light enters you.", author: "Rumi" },
+                        { text: "He who has a why to live can bear almost any how.", author: "Nietzsche" },
+                        { text: "In the middle of difficulty lies opportunity.", author: "Einstein" },
+                        { text: "The only way to do great work is to love what you do.", author: "Steve Jobs" },
+                        { text: "Solitude is the place of purification.", author: "Martin Buber" },
+                    ];
+                    const r = fallback[Math.floor(Math.random() * fallback.length)];
+                    document.getElementById("quoteText").textContent = '"' + r.text + '"';
+                    document.getElementById("quoteAuthor").textContent = '— ' + r.author;
                 }
             }
-        }
 
-        // Save links to URL hash
-        function saveLinks() {
-            if (links.length === 0) {
-                history.replaceState(null, "", window.location.pathname);
-            } else {
-                const json = JSON.stringify(links);
-                const encoded = btoa(unescape(encodeURIComponent(json)));
-                history.replaceState(null, "", window.location.pathname + "#" + encoded);
-            }
-        }
+            fetchQuote();
 
-        // Render links
-        function render() {
-            document.getElementById("countSpan").textContent = "(" + links.length + ")";
-            const container = document.getElementById("linksContainer");
-            container.innerHTML = "";
+            // ============================================================
+            // LINKS LOGIC
+            // ============================================================
+            var links = [];
+            var linkInput = document.getElementById("linkInput");
+            var addBtn = document.getElementById("addBtn");
+            var linksContainer = document.getElementById("linksContainer");
+            var countSpan = document.getElementById("countSpan");
+            var copyBtn = document.getElementById("copyBtn");
+            var clearBtn = document.getElementById("clearBtn");
 
-            if (links.length === 0) {
-                container.innerHTML = '<div class="empty">No links yet. Add one above.</div>';
-                return;
-            }
-
-            links.slice().reverse().forEach(function(url, i) {
-                const realIndex = links.length - 1 - i;
-                const div = document.createElement("div");
-                div.className = "link-item";
-
-                const a = document.createElement("a");
-                a.className = "link-url";
-                a.textContent = url;
-                a.title = url;
-                a.href = url;
-                a.target = "_blank";
-
-                const visitBtn = document.createElement("button");
-                visitBtn.className = "visit-btn";
-                visitBtn.textContent = "Visit →";
-                visitBtn.onclick = function(e) {
-                    e.stopPropagation();
-                    window.open(url, "_blank");
-                };
-
-                const delBtn = document.createElement("button");
-                delBtn.className = "del-btn";
-                delBtn.textContent = "✕";
-                delBtn.onclick = function(e) {
-                    e.stopPropagation();
-                    links.splice(realIndex, 1);
-                    saveLinks();
-                    render();
-                };
-
-                div.appendChild(a);
-                div.appendChild(visitBtn);
-                div.appendChild(delBtn);
-                container.appendChild(div);
-            });
-        }
-
-        // Add link
-        function addLink() {
-            const input = document.getElementById("linkInput");
-            let url = input.value.trim();
-
-            if (!url) return;
-
-            if (!url.startsWith("http://") && !url.startsWith("https://")) {
-                url = "https://" + url;
+            function loadLinks() {
+                var hash = window.location.hash.substring(1);
+                if (hash) {
+                    try {
+                        var json = decodeURIComponent(atob(hash));
+                        links = JSON.parse(json);
+                        if (!Array.isArray(links)) links = [];
+                    } catch (e) {
+                        links = [];
+                    }
+                }
             }
 
-            try {
-                new URL(url);
-            } catch (e) {
-                alert("Please enter a valid link");
-                return;
+            function saveLinks() {
+                if (links.length === 0) {
+                    history.replaceState(null, "", window.location.pathname);
+                } else {
+                    var json = JSON.stringify(links);
+                    var encoded = btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, function(match, p1) {
+                        return String.fromCharCode("0x" + p1);
+                    }));
+                    history.replaceState(null, "", window.location.pathname + "#" + encoded);
+                }
             }
 
-            links.push(url);
-            input.value = "";
-            saveLinks();
-            render();
-        }
+            function render() {
+                countSpan.textContent = "(" + links.length + ")";
+                linksContainer.innerHTML = "";
 
-        // Clear all
-        function clearAll() {
-            if (links.length === 0) return;
-            if (confirm("Delete all " + links.length + " links?")) {
-                links = [];
+                if (links.length === 0) {
+                    linksContainer.innerHTML = '<div class="empty">No links yet. Add one above.</div>';
+                    return;
+                }
+
+                for (var i = links.length - 1; i >= 0; i--) {
+                    (function(index) {
+                        var url = links[index];
+                        var div = document.createElement("div");
+                        div.className = "link-item";
+
+                        var a = document.createElement("a");
+                        a.className = "link-url";
+                        a.textContent = url;
+                        a.title = url;
+                        a.href = url;
+                        a.target = "_blank";
+                        a.rel = "noopener";
+
+                        var visitBtn = document.createElement("button");
+                        visitBtn.className = "visit-btn";
+                        visitBtn.textContent = "Visit →";
+                        visitBtn.onclick = function(e) {
+                            e.stopPropagation();
+                            window.open(url, "_blank", "noopener");
+                        };
+
+                        var delBtn = document.createElement("button");
+                        delBtn.className = "del-btn";
+                        delBtn.textContent = "✕";
+                        delBtn.onclick = function(e) {
+                            e.stopPropagation();
+                            links.splice(index, 1);
+                            saveLinks();
+                            render();
+                            showToast("Link removed");
+                        };
+
+                        div.appendChild(a);
+                        div.appendChild(visitBtn);
+                        div.appendChild(delBtn);
+                        linksContainer.appendChild(div);
+                    })(i);
+                }
+            }
+
+            function showToast(msg) {
+                var existing = document.querySelector(".toast");
+                if (existing) existing.remove();
+                var toast = document.createElement("div");
+                toast.className = "toast";
+                toast.textContent = msg;
+                document.body.appendChild(toast);
+                setTimeout(function() {
+                    toast.style.opacity = "0";
+                    setTimeout(function() { toast.remove(); }, 300);
+                }, 2000);
+            }
+
+            addBtn.onclick = function() {
+                var url = linkInput.value.trim();
+                if (!url) {
+                    showToast("Please paste a link");
+                    return;
+                }
+                if (!/^https?:\/\//i.test(url)) {
+                    url = "https://" + url;
+                }
+                try {
+                    new URL(url);
+                } catch (e) {
+                    showToast("Invalid link");
+                    return;
+                }
+                links.push(url);
+                linkInput.value = "";
                 saveLinks();
                 render();
-            }
-        }
+                showToast("Link added!");
+            };
 
-        // Copy shareable link
-        function copyShareableLink() {
-            const url = window.location.href;
-            navigator.clipboard.writeText(url).then(function() {
-                const btn = document.getElementById("copyLinkBtn");
-                btn.textContent = "✅ Copied!";
-                setTimeout(function() {
-                    btn.textContent = "📋 Copy Shareable Link";
-                }, 2000);
-            }).catch(function() {
-                prompt("Copy this link and share it:", url);
-            });
-        }
+            linkInput.onkeypress = function(e) {
+                if (e.key === "Enter") addBtn.onclick();
+            };
 
-        // Event listeners
-        document.getElementById("addBtn").addEventListener("click", addLink);
-        document.getElementById("linkInput").addEventListener("keypress", function(e) {
-            if (e.key === "Enter") addLink();
-        });
-        document.getElementById("clearBtn").addEventListener("click", clearAll);
-        document.getElementById("copyLinkBtn").addEventListener("click", copyShareableLink);
+            clearBtn.onclick = function() {
+                if (links.length === 0) return;
+                if (confirm("Delete all " + links.length + " links?")) {
+                    links = [];
+                    saveLinks();
+                    render();
+                    showToast("All cleared");
+                }
+            };
 
-        // Listen for hash changes (when opening shared link)
-        window.addEventListener("hashchange", function() {
+            copyBtn.onclick = function() {
+                var url = window.location.href;
+                navigator.clipboard.writeText(url).then(function() {
+                    copyBtn.textContent = "✅ Copied!";
+                    setTimeout(function() { copyBtn.textContent = "📋 Copy Shareable Link"; }, 2000);
+                    showToast("Link copied! Share it.");
+                }).catch(function() {
+                    prompt("Copy this link:", url);
+                });
+            };
+
+            window.onhashchange = function() {
+                loadLinks();
+                render();
+            };
+
             loadLinks();
             render();
-        });
-
-        // Init
-        loadLinks();
-        render();
+        })();
     </script>
 </body>
 </html>
